@@ -94,6 +94,29 @@ protected:
 	// End of APawn interface
 };
 
+// Camera boom positioning variables
+UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Camera)
+float CameraBoomZOffset = 100.f;
+
+UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Camera)  
+bool bRightShoulderCamera = true;
+
+// Input binding for camera switch 
+InputComponent->BindAction("SwitchCamera", IE_Pressed, this, &ASwatCharacter::SwitchCameraShoulder);
+
+// Camera switch function
+void ASwatCharacter::SwitchCameraShoulder() 
+{
+  bRightShoulderCamera = !bRightShoulderCamera;
+  
+  if (bRightShoulderCamera) {
+    CameraBoom->RelativeLocation = FVector(-CameraBoomZOffset, 0, 0);
+  } else {
+    CameraBoom->RelativeLocation = FVector(CameraBoomZOffset, 0, 0);
+  } 
+}
+
+
 //Camera Zoom in button
 protected:
     void CameraZoomIn();
