@@ -150,6 +150,27 @@ float a = 25.0;
 InputComponent->BindAction("ZoomIn", IE_Pressed, this, &ATutorialForOthersCharacter::CameraZoomIn);
 InputComponent->BindAction("ZoomOut", IE_Pressed, this, &ATutorialForOthersCharacter::CameraZoomOut);
 
+// The skeletal mesh we want to switch to
+UPROPERTY(EditAnywhere)
+USkeletalMesh* AlternateMesh; 
+
+// Handle switching meshes
+void AMyCharacter::SwitchMesh()
+{
+  // Swap the meshes
+  if (GetMesh()->SkeletalMesh == OriginalMesh) {
+    GetMesh()->SetSkeletalMesh(AlternateMesh);  
+  } else {
+    GetMesh()->SetSkeletalMesh(OriginalMesh);
+  }
+}
+
+// Bind input to function
+void AMyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+{
+  PlayerInputComponent->BindAction("SwitchMesh", IE_Pressed, this, &AMyCharacter::SwitchMesh); 
+}
+
 //Ragdoll button
 bool ASwatCharacter::Die(float Damage, FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
