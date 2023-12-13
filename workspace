@@ -189,23 +189,6 @@ bool ASwatCharacter::Die(float Damage, FDamageEvent const& DamageEvent, class AC
         }
     }
 
-    /* Apply physics impulse on the bone of the enemy skeleton mesh we hit (ray-trace damage only) */
-    /*
-    if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
-    {
-        FPointDamageEvent PointDmg = *((FPointDamageEvent*)(&DamageEvent));
-        {
-            GetMesh()->AddImpulseAtLocation(PointDmg.ShotDirection * 5000, PointDmg.HitInfo.ImpactPoint, PointDmg.HitInfo.BoneName);
-        }
-    }
-    if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID))
-    {
-        FRadialDamageEvent RadialDmg = *((FRadialDamageEvent const*)(&DamageEvent));
-        {
-            GetMesh()->AddRadialImpulse(RadialDmg.Origin, RadialDmg.Params.GetMaxRadius(), 100000, ERadialImpulseFalloff::RIF_Linear);
-        }
-    }
-*/
     return true;
 }
 
