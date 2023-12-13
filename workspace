@@ -1,1 +1,275 @@
+pragma once
+#include "GameFramework/SpringArmComponent.h"
+#include "MyGameCharacter.generated.h"
+//Spawns the player
+void ALS_AnimMan_Character::BeginPlay()
+Super::BeginPlay();
 
+GetWorld()->GetTimerManager().SetTimer(TimerHandle_AnimLoop, this, &ALS_AnimMan_Character::AnimLoop, 0.
+
+//Grants player movment binds
+void ALS_AnimMan_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+
+Super::SetupPlayerInputComponent(PlayerInputComponent);
+PlayerInputComponent->BindAxis("MoveForward", this, &ALS_AnimMan_Character::MoveForward);
+PlayerInputComponent->BindAxis("MoveRight", this, &ALS_AnimMan_Character::MoveRight);
+PlayerInputComponent->BindAxis("Turn", this, &ALS_AnimMan_Character::Turn);
+PlayerInputComponent->BindAxis("LookUp", this, &ALS_AnimMan_Character::LookUp);
+
+//Grants player a roll buttton
+BindAction(“Roll”, IE_DoubleClick, this, &SomeFunction);
+
+
+UCLASS(config=Game)
+class AMyGameCharacter : public ACharacter
+{
+	GENERATED_UCLASS_BODY()
+
+	/** Camera boom positioning the camera behind the character. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	TSubobjectPtr<class USpringArmComponent> CameraBoom;
+
+	/** Follow camera. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	TSubobjectPtr<class UCameraComponent> FollowCamera;
+
+	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	float BaseTurnRate;
+
+	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	float BaseLookUpRate;
+
+	/** Player resources. */
+    /*
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn)
+	float Health;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn)
+	float Stamina;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn)
+	float Energy;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn)
+	float Shields;
+*/
+protected:
+
+	/** Called for forwards/backward input */
+	void MoveForward(float Value);
+
+	/** Called for side to side input */
+	void MoveRight(float Value);
+
+	/** 
+	 * Called via input to turn at a given rate. 
+	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
+	 */
+	void TurnAtRate(float Rate);
+
+	/**
+	 * Called via input to turn look up/down at a given rate. 
+	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
+	 */
+	void LookUpAtRate(float Rate);
+
+	/** Handler for when a touch input begins. */
+
+	void StartSprint();
+
+	void EndSprint();
+
+protected:
+	// APawn interface
+	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) OVERRIDE;
+
+	virtual void ReceiveActorOnInputTouchBegin(const ETouchIndex::Type FingerIndex) OVERRIDE;
+
+	virtual void ReceiveActorOnInputTouchEnd(const ETouchIndex::Type FingerIndex) OVERRIDE;
+	// End of APawn interface
+};
+
+//Camera Zoom in button
+protected:
+    void CameraZoomIn();
+    void CameraZoomOut();
+    float CameraZoom_v;
+
+    
+void ATutorialForOthersCharacter::CameraZoomIn()
+{
+    CameraZoom_v = CameraZoom_v - 25.0;
+
+    if(CameraZoom_v <= 75.0) 
+    {
+        CameraBoom->TargetArmLength = 75.0;
+        CameraZoom_v = 75.0;
+    }
+    else
+    {
+        CameraBoom->TargetArmLength = CameraZoom_v;
+    }
+}
+
+void ATutorialForOthersCharacter::CameraZoomOut()
+{
+
+}
+
+float a = 25.0;
+
+
+InputComponent->BindAction("ZoomIn", IE_Pressed, this, &ATutorialForOthersCharacter::CameraZoomIn);
+InputComponent->BindAction("ZoomOut", IE_Pressed, this, &ATutorialForOthersCharacter::CameraZoomOut);
+
+//Ragdoll button
+bool ASwatCharacter::Die(float Damage, FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+    if (!bIsDying)
+    {
+        bReplicateMovement = false;
+        bTearOff = true;
+
+        DetachFromControllerPendingDestroy();
+
+        /* Disable all collision on capsule */
+        UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+        CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+        GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+        SetActorEnableCollision(true);
+
+        if (!bIsRagdoll)
+        {
+            // Ragdoll
+            GetMesh()->SetAllBodiesSimulatePhysics(true);
+            GetMesh()->SetSimulatePhysics(true);
+            GetMesh()->WakeAllRigidBodies();
+            GetMesh()->bBlendPhysics = true;
+
+            UCharacterMovementComponent* CharacterComp = Cast<UCharacterMovementComponent>(GetMovementComponent());
+            if (CharacterComp)
+            {
+                CharacterComp->StopMovementImmediately();
+                CharacterComp->DisableMovement();
+                CharacterComp->SetComponentTickEnabled(false);
+            }
+
+            SetLifeSpan(10.0f);
+            bIsRagdoll = true;
+        }
+    }
+
+    /* Apply physics impulse on the bone of the enemy skeleton mesh we hit (ray-trace damage only) */
+    /*
+    if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
+    {
+        FPointDamageEvent PointDmg = *((FPointDamageEvent*)(&DamageEvent));
+        {
+            GetMesh()->AddImpulseAtLocation(PointDmg.ShotDirection * 5000, PointDmg.HitInfo.ImpactPoint, PointDmg.HitInfo.BoneName);
+        }
+    }
+    if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID))
+    {
+        FRadialDamageEvent RadialDmg = *((FRadialDamageEvent const*)(&DamageEvent));
+        {
+            GetMesh()->AddRadialImpulse(RadialDmg.Origin, RadialDmg.Params.GetMaxRadius(), 100000, ERadialImpulseFalloff::RIF_Linear);
+        }
+    }
+*/
+    return true;
+}
+
+// Bind rag doll to X key
+void ASwatCharacter::SetupPlayerInputComponent(UInputComponent* InputComponent)
+{
+  InputComponent->BindAction("Ragdoll", IE_Pressed, this, &ASwatCharacter::ToggleRagdoll); 
+}
+
+void ASwatCharacter::ToggleRagdoll()
+{
+  bIsRagdoll = !bIsRagdoll;
+  
+  if (bIsRagdoll)
+  {
+    // Enable ragdoll
+  }
+  else
+  {
+    // Disable ragdoll
+  }
+}
+
+//Climbing vaulting
+FString * AProjectX2Character::GetName()
+{
+
+	FVector CameraLoc;
+	FRotator CameraRot;
+	GetActorEyesViewPoint(CameraLoc, CameraRot);
+
+
+	FVector StartTrace = CameraLoc;
+	FVector EndTrace = CameraLoc + (CameraRot.Vector() * 5000);
+
+
+	static FString testString;
+
+	FCollisionQueryParams TraceParams
+		(
+		FName(TEXT("GetName")),
+		false,
+		this
+		);
+
+	FHitResult HitResult;
+
+	if (GetWorld()->LineTraceSingle(HitResult, StartTrace, EndTrace, ECC_Visibility, TraceParams))
+	{
+
+		AActor * ActorTest;
+
+
+		if (HitResult.GetActor())
+		{
+			ActorTest= HitResult.GetActor();
+
+
+			if (HitResult.GetActor()->GetName() == "TestingName")
+			{
+				testString = HitResult.GetActor()->GetName();
+			}
+
+			else
+			{
+				testString = FString("Nothing");
+			}
+
+		}
+
+		else
+		{
+			testString = FString("Not an Actor");
+		}
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.0, FColor::Red, FString::FString(testString));
+
+
+		DrawDebugLine
+			(
+			GetWorld(),
+			StartTrace, // Start Trace
+			HitResult.Location, // Hit Result Location
+			FColor(255, 0, 0), // Red
+			false, // Persistent Lines
+			5.0, // Time
+			0, // Depth Priority
+			5.0 // Thickness
+			);
+	}
+
+	return & testString; // return the address 
+}
