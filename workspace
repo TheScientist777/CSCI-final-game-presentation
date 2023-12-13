@@ -19,7 +19,7 @@ PlayerInputComponent->BindAxis("LookUp", this, &ALS_AnimMan_Character::LookUp);
 //Grants player a roll buttton
 BindAction(“Roll”, IE_DoubleClick, this, &SomeFunction);
 
-
+//Grants player a sprint button
 UCLASS(config=Game)
 class AMyGameCharacter : public ACharacter
 {
