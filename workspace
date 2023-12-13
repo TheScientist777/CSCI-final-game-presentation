@@ -16,6 +16,9 @@ PlayerInputComponent->BindAxis("MoveRight", this, &ALS_AnimMan_Character::MoveRi
 PlayerInputComponent->BindAxis("Turn", this, &ALS_AnimMan_Character::Turn);
 PlayerInputComponent->BindAxis("LookUp", this, &ALS_AnimMan_Character::LookUp);
 
+//Grants player a crouch button
+GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+
 //Grants player a roll buttton
 BindAction(“Roll”, IE_DoubleClick, this, &SomeFunction);
 
